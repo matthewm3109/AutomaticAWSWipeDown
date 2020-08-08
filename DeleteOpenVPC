@@ -1,0 +1,46 @@
+#import libraries 
+import boto3 
+import time 
+
+#Define functions 
+def getAllVPC(connectionObject):
+    response = connectionObject.describe_vpcs()
+    count = 0 
+    for vpc in response["Vpcs"]:
+        if vpc['IsDefault'] == False:
+            count = count + 1 
+            deleteVPC(vpc['VpcId'],connectionObject)
+    print("Deleted {} VPC(s)".format(count))
+
+def deleteVPC(vpc_id,connectionObject):
+    connectionObject.delete_vpc(VpcId = vpc_id)
+
+#Get all the subnets and delete them
+def getAllSubnets(connectionObject):
+    response = connectionObject.describe_subnets()
+    count = 0 
+    for subnet in response['Subnets']:
+        count = count + 1 
+        connectionObject.delete_subnet(SubnetId = subnet['SubnetId'])
+    print("Deleted {} Subnet(s)".format(count))    
+
+#Define environment variables
+regionName = {enter here}
+secretKey = {enter here}
+accessKey = {enter here}
+
+if __name__ == '__main__':
+
+    #connect to AWS 
+    boto3.setup_default_session(aws_access_key_id=accessKey,
+    aws_secret_access_key=secretKey,
+    region_name=regionName)
+
+    #setup client connect 
+    ec2Client = boto3.client('ec2')
+    #Delete all subnets 
+    getAllSubnets(ec2Client)
+    #Delete all VPCs 
+    getAllVPC(ec2Client)
+
+
